@@ -13,15 +13,16 @@ import re
 domainName = "local-qa.staples.com"
 applicationPath = "/services/printing"
 authCookieName = "SPLUS.Phoenix.Site.Auth"
-authCookieValue = "CfDJ8O9Q0PpvA_BJszQq-wRngAU9ZbrOMhaI6K-I3ePxPgP4oyZrgSaKL0ZAv9Qfs1-mQUWwPINlME2UgLl0oiEuh" + \
-                  "nqMLdZqgVehRcsrPRwURDndSt3kqDiM9bobsCScZPtZBpOOSPRgsx1rEe9OLBn0-FyY-uOeLapbXUof9syibw_2pDB9YNjyfH" + \
-                  "_4jsZ550Irq5_nFD1JtotA6Ni7noDmJHY4GT7_t75gcJyfzD8dIWgGtALRFugZppz049OyxR7RmczFVcjqrit7yTF6iQ2o1hRZr" + \
-                  "NcS8liCO1P9gvq2Wz-a3K8zdOhQ-lgYKnzn1JJ279CJ9q011JY5-inKlTV9Xto"
+authCookieValue = "CfDJ8O9Q0PpvA_BJszQq-wRngAV748hXeDX7e4ON_QsViZ4EDg4rV7FdCguGshwWkwKY9deHAOLkrxZBTLns" + \
+                  "dbiH7gfuhHhXlOd5UZFHhF-ejOEfM-aQbORKVwARrex9-2nnGUu6IRSHqKmHfqwY6BU6Xk_o70nDfkQW9iiFSw" + \
+                  "iQiGnbAuRPlvNZ8gmCAJ9hi5LwJv1BuhL1fF6c6umq7cquytYnFphHpLhIi2e5udHTHX3rs24hItAzIJrOft5lJAdIFo" + \
+                  "Fx95G2zOkYSU1DqsuWqc3SZASr4EALKTQjTzH5pus3hPTMKIJ_ofjM5zNVNY-cAIiwT9ayz29tiQ1M5kakAD0"
 # productKey = "337c731e2cc14900"
 # productKey = "880e9a0b0a627f97"
 # productKey = "550f7cadad98fe98"
 # productKey = "34a92d9f78cb90a4"
 productKey = "b904ce0e33e714d7"  # same day poster
+selectedQuantity = 1
 seattleStore = "1312"
 
 async def loadCartPage(session, stress):
@@ -50,7 +51,7 @@ async def addToShoppingCart(session, groupKey, projectKey):
         "Projects": [
             {
                 "ProjectKey": projectKey,
-                "Quantity": 100
+                "Quantity": selectedQuantity
             }
         ]
     }
@@ -66,19 +67,19 @@ async def updateProject(session, projectKey):
                            ssl=False, timeout=None) as optionResponse:
         selectedOptions = json.loads(await optionResponse.text())
 
-    selectedOptions["IsExpress"] = "True"
+    selectedOptions["IsCourierDelivery"] = "True"
     data = {
         "ProjectId": projectKey,
         "ProductKey": productKey,
         "SelectedOptions": selectedOptions,
-        "SelectedQuantity": 100
+        "SelectedQuantity": selectedQuantity
     }
 
     async with session.post(f"https://{domainName}{applicationPath}/api/v3/project/UpdateForReview/{projectKey}",
                             json=data, ssl=False, timeout=None) as response:
         await response.text()
     sleep(0.1)
-    return None
+    return response.status
 
 
 async def estimateShipMethods(session):
@@ -131,12 +132,13 @@ async def loadUpsellPage(session, projectKey):
 
 
 async def navigateToCartPage(session, projectGroupKey, projectKey, inStorePickup):
-    await updateProject(session, projectKey)
-    if inStorePickup:
-        await setPickupLocation(session)
-    else:
-        await setShipMethod(session)
-    await addToShoppingCart(session, projectGroupKey, projectKey)
+    status = await updateProject(session, projectKey)
+    if status < 300:
+        if inStorePickup:
+            await setPickupLocation(session)
+        else:
+            await setShipMethod(session)
+        await addToShoppingCart(session, projectGroupKey, projectKey)
     return None
 
 
