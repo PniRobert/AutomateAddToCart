@@ -11,18 +11,20 @@ import json
 import re
 
 domainName = "local-qa.staples.com"
+# domainName = "qe101.staples.com"
 applicationPath = "/services/printing"
 authCookieName = "SPLUS.Phoenix.Site.Auth"
-authCookieValue = "CfDJ8O9Q0PpvA_BJszQq-wRngAV748hXeDX7e4ON_QsViZ4EDg4rV7FdCguGshwWkwKY9deHAOLkrxZBTLns" + \
-                  "dbiH7gfuhHhXlOd5UZFHhF-ejOEfM-aQbORKVwARrex9-2nnGUu6IRSHqKmHfqwY6BU6Xk_o70nDfkQW9iiFSw" + \
-                  "iQiGnbAuRPlvNZ8gmCAJ9hi5LwJv1BuhL1fF6c6umq7cquytYnFphHpLhIi2e5udHTHX3rs24hItAzIJrOft5lJAdIFo" + \
-                  "Fx95G2zOkYSU1DqsuWqc3SZASr4EALKTQjTzH5pus3hPTMKIJ_ofjM5zNVNY-cAIiwT9ayz29tiQ1M5kakAD0"
+# authCookieName = "SPLUS.Phoenix.Site.Staging-Prod.Auth"
+authCookieValue = "CfDJ8O9Q0PpvA_BJszQq-wRngAVSY0hs6svy1MgyCsBSt5xe9BQwi_nGGFDxS4rs4MMgfKbgNMr_gMB1B373_pzsE9IsC2" + \
+                  "wK2NlGDcz7rOB0Zy1AWOjBBXGUH5z6YXUzqh1Xlg_VOnoxU6xC9NXqEhZK04A5eeCnVu732kGtz28iu_Ri6acvsMJKBIb_4" + \
+                  "S22GCLnog5kA-LdxP6ehIXGw-TCxU3h6nDYVZbrjw4d8mBpcPAIA-2H2lDbYYB7d_CUIe3wVwdZzzRgdajx8OEMQil3pY-t-f" + \
+                  "zHvukPLnEy7sF8MZCnVpk4VGjXOYQ2UPi3V2zwXlXxvJ_adFMLQxyMgCt-w4U"
 # productKey = "337c731e2cc14900"
 # productKey = "880e9a0b0a627f97"
 # productKey = "550f7cadad98fe98"
 # productKey = "34a92d9f78cb90a4"
 productKey = "b904ce0e33e714d7"  # same day poster
-selectedQuantity = 1
+selectedQuantity = 2
 seattleStore = "1312"
 
 async def loadCartPage(session, stress):
