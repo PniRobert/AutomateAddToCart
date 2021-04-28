@@ -10,22 +10,25 @@ import aiohttp
 import json
 import re
 
+pnienv = "qa1"
 domainName = "local-qa.staples.com"
 # domainName = "qe101.staples.com"
 applicationPath = "/services/printing"
 authCookieName = "SPLUS.Phoenix.Site.Auth"
 # authCookieName = "SPLUS.Phoenix.Site.Staging-Prod.Auth"
-authCookieValue = "CfDJ8O9Q0PpvA_BJszQq-wRngAVSY0hs6svy1MgyCsBSt5xe9BQwi_nGGFDxS4rs4MMgfKbgNMr_gMB1B373_pzsE9IsC2" + \
-                  "wK2NlGDcz7rOB0Zy1AWOjBBXGUH5z6YXUzqh1Xlg_VOnoxU6xC9NXqEhZK04A5eeCnVu732kGtz28iu_Ri6acvsMJKBIb_4" + \
-                  "S22GCLnog5kA-LdxP6ehIXGw-TCxU3h6nDYVZbrjw4d8mBpcPAIA-2H2lDbYYB7d_CUIe3wVwdZzzRgdajx8OEMQil3pY-t-f" + \
-                  "zHvukPLnEy7sF8MZCnVpk4VGjXOYQ2UPi3V2zwXlXxvJ_adFMLQxyMgCt-w4U"
+authCookieValue = "CfDJ8O9Q0PpvA_BJszQq-wRngAVxlYRMyQkZlGkLCDXhP-I9uoDMjQBUc79AN1E2w9ySsnPItD5VF5gJ8bz-" + \
+                  "niETT2rtnGOsHqf9dIPUJN_mLjsE13H74bn0ngzF7f34aNzCaj6jF7QyrT5EYCCkxbcK2X4AgosPfu7ywNke" + \
+                  "dDtnixlJylnV63qLZ62yqtS9hFKjWf8CAYoeu22Ctg7Tgb8NcyNlftOoiPOaxzKgHslcaH8xf8zm7NYUTv-Fxk" + \
+                  "MK_i_c2V9icpTtvJVkAIsx1hOgut7i-91cNwKGwygP0vEAM_xX1rfPvX94aUOeRSIJeaWeV_LZNSCUKCTo084M1lxCmc0"
 # productKey = "337c731e2cc14900"
 # productKey = "880e9a0b0a627f97"
 # productKey = "550f7cadad98fe98"
 # productKey = "34a92d9f78cb90a4"
+# productKey = "fadb30ec37bdebc8" # same day poster mega staging
 productKey = "b904ce0e33e714d7"  # same day poster
 selectedQuantity = 2
 seattleStore = "1312"
+
 
 async def loadCartPage(session, stress):
     async with session.get(f"https://{domainName}{applicationPath}/Cart", ssl=False, timeout=None) as response:
@@ -41,11 +44,13 @@ async def loadCartPage(session, stress):
         async with session.get(f"https://{domainName}{applicationPath}/services/printing/Cart/Api/GetCartCount",
                                ssl=False, timeout=None) as cartCount:
             await cartCount.text()
-        async with session.post(f"https://{domainName}{applicationPath}/PC.WebServices/CartService.svc/GetCartItemCounts",
-                                json={"encUserID": encUserId}, ssl=False, timeout=None) as apiResponse:
+        async with session.post(
+                f"https://{domainName}{applicationPath}/PC.WebServices/CartService.svc/GetCartItemCounts",
+                json={"encUserID": encUserId}, ssl=False, timeout=None) as apiResponse:
             data = await apiResponse.text()
         sleep(0.1)
     return None
+
 
 async def addToShoppingCart(session, groupKey, projectKey):
     data = {
@@ -114,7 +119,8 @@ async def setPickupLocation(session):
 async def getStorePromisedTime(session, isExress):
     body = {"Products": [{"ProductSku": "PNI_PostCards_SameDay", "Options": [
         {"Key": "IsExpress", "Value": f"{isExress}"}]}], "RetailerStoreId": "0126"}
-    async with session.post(f"https://{domainName}{applicationPath}/cart/api/StorePromiseTime", json=body, ssl=False, timeout=None) as response:
+    async with session.post(f"https://{domainName}{applicationPath}/cart/api/StorePromiseTime", json=body, ssl=False,
+                            timeout=None) as response:
         await response.text()
     sleep(0.05)
     return None
@@ -123,8 +129,9 @@ async def getStorePromisedTime(session, isExress):
 async def loadUpsellPage(session, projectKey):
     async with session.get(f"https://{domainName}{applicationPath}/cart/api/Info", ssl=False, timeout=None) as cartInfo:
         await cartInfo.text()
-    async with session.get(f"https://{domainName}{applicationPath}/legacy/StoreLocatorProxy/GetDefaultStore?latitude=47.65&longitude=-122.31&locale=en_US",
-                           ssl=False, timeout=None) as defaultStore:
+    async with session.get(
+            f"https://{domainName}{applicationPath}/legacy/StoreLocatorProxy/GetDefaultStore?latitude=47.65&longitude=-122.31&locale=en_US",
+            ssl=False, timeout=None) as defaultStore:
         await defaultStore.text()
     await estimateShipMethods(session)
     await getStorePromisedTime(session, True)
@@ -153,7 +160,8 @@ async def approveProject(session, projectKey):
 
 
 async def getProjectInfo(session):
-    async with session.get(f"https://{domainName}{applicationPath}/product/{productKey}/builder/", ssl=False, timeout=None) as response:
+    async with session.get(f"https://{domainName}{applicationPath}/product/{productKey}/builder/", ssl=False,
+                           timeout=None) as response:
         data = await response.text()
         groupId = re.findall("[0-9]+", response.url.path)[0]
     sleep(0.1)
@@ -172,12 +180,22 @@ async def setupAsRik(session):
     return None
 
 
+async def setEnvironment(session):
+    async with session.get(f"https://{domainName}{applicationPath}/?pnienv={pnienv}",
+                           ssl=False, timeout=None) as response:
+        await response.text()
+    sleep(0.1)
+    return None
+
+
 async def visitSite():
     cookies = {authCookieName: authCookieValue}
     async with aiohttp.ClientSession(cookies=cookies) as session:
+        # await setEnvironment(session)
         projectInfo = await getProjectInfo(session)
         await approveProject(session, projectInfo[1])
         await navigateToCartPage(session, projectInfo[0], projectInfo[1], True)
+
 
 if __name__ == "__main__":
     asyncio.run(visitSite())
