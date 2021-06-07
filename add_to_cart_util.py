@@ -1,33 +1,12 @@
-from bs4 import BeautifulSoup
-import concurrent.futures
-from datetime import datetime, timezone
-from datetime import timedelta
+import datetime
 from time import sleep
 from urllib import parse as urlparse
 import pytz
-import asyncio
-import aiohttp
 import json
 import re
 
-pnienv = "qa1"
 domainName = "local-qa.staples.com"
-# domainName = "qe101.staples.com"
 applicationPath = "/services/printing"
-authCookieName = "SPLUS.Phoenix.Site.Auth"
-# authCookieName = "SPLUS.Phoenix.Site.Staging-Prod.Auth"
-authCookieValue = "CfDJ8O9Q0PpvA_BJszQq-wRngAVFiX6yRp-w7WNisFiX_vTepuTvEJ04mymgsGzunsgMX2Ws8VUlky0IbdnB7m7Qqbl" + \
-                  "T8yqlZz-4YTpFpeIKdWznomT409vtHpXw9-mlR5lyl65U7k_DrKgz6vpv5nlHQWSMKGJzGPwMddw81Nbh3l4g88-Mut" + \
-                  "XcCFfS3TmNrkprrDFnxx46C-c-w8GZKVHHngkXpI8ttjE_rhE0DHM2L3E1Imeb8pymXa2ps3NLw8MWW2VHhe9Hcf610_7" + \
-                  "Pk_wW8KHjr3pTLKzsrWYPtetC0U1U2w7Q07yWJjaKYwKotKyRUeLTxke9zjTQ-krNlyFkLAE"
-# productKey = "337c731e2cc14900"
-# productKey = "880e9a0b0a627f97"
-# productKey = "550f7cadad98fe98"
-# productKey = "34a92d9f78cb90a4"
-# productKey = "fadb30ec37bdebc8" # same day poster mega staging
-productKey = "b904ce0e33e714d7"  # same day poster
-selectedQuantity = 2
-seattleStore = "1312"
 
 
 async def loadCartPage(session, stress):
@@ -52,7 +31,7 @@ async def loadCartPage(session, stress):
     return None
 
 
-async def addToShoppingCart(session, groupKey, projectKey):
+async def addToShoppingCart(session, groupKey, projectKey, selectedQuantity):
     data = {
         "GroupProjectKey": groupKey,
         "Projects": [
@@ -69,12 +48,14 @@ async def addToShoppingCart(session, groupKey, projectKey):
     return None
 
 
-async def updateProject(session, projectKey):
+async def updateProject(session, projectKey, productKey, selectedQuantity, specOptionKey):
     async with session.get(f"https://{domainName}{applicationPath}/api/v3/project/activeOptions/{projectKey}",
                            ssl=False, timeout=None) as optionResponse:
         selectedOptions = json.loads(await optionResponse.text())
 
-    selectedOptions["IsCourierDelivery"] = "True"
+    if specOptionKey is not None:
+        selectedOptions[specOptionKey] = "True"
+
     data = {
         "ProjectId": projectKey,
         "ProductKey": productKey,
@@ -89,11 +70,11 @@ async def updateProject(session, projectKey):
     return response.status
 
 
-async def estimateShipMethods(session):
+async def estimateShipMethods(session, productSku, selectedQuantity, price):
     tz = pytz.timezone("America/Los_Angeles")
     now = urlparse.quote(tz.localize(
         datetime.now()).isoformat(timespec="seconds"))
-    url = f"https://{domainName}{applicationPath}/cart/api/ShippingMethods/Estimate?retailerProductSku=PNI_PostCards&quantity=100&price=45.99&orderDate={now}"
+    url = f"https://{domainName}{applicationPath}/cart/api/ShippingMethods/Estimate?retailerProductSku={productSku}&quantity={selectedQuantity}&price={price}&orderDate={now}"
     async with session.get(url, ssl=False, timeout=None) as response:
         await response.text()
     sleep(0.05)
@@ -108,27 +89,27 @@ async def setShipMethod(session):
     return None
 
 
-async def setPickupLocation(session):
+async def setPickupLocation(session, storeNumber):
     async with session.post(f"https://{domainName}{applicationPath}/cart/api/PickupLocation",
-                            json={"RetailerStoreId": seattleStore}, ssl=False, timeout=None) as response:
+                            json={"RetailerStoreId": storeNumber}, ssl=False, timeout=None) as response:
         await response.text()
         sleep(0.1)
         return None
 
 
-async def setCourierDeliveryAddress(session):
+async def setCourierDeliveryAddress(session, address1, city, zipCode, stateAbbre):
     async with session.post(f"https://{domainName}{applicationPath}/cart/api/address/current",
-                            json={"Address1": "321 West Galer Street", "City": "Seattle", "PostalCode": "98119",
-                                  "StateAbbreviation": "WA"},
+                            json={"Address1": address1, "City": city, "PostalCode": zipCode,
+                                  "StateAbbreviation": stateAbbre},
                             ssl=False, timeout=None) as response:
         await response.text()
         sleep(0.1)
         return None
 
 
-async def getStorePromisedTime(session, isExress):
+async def getStorePromisedTime(session, storeNumber, isExress):
     body = {"Products": [{"ProductSku": "PNI_PostCards_SameDay", "Options": [
-        {"Key": "IsExpress", "Value": f"{isExress}"}]}], "RetailerStoreId": "0126"}
+        {"Key": "IsExpress", "Value": f"{isExress}"}]}], "RetailerStoreId": storeNumber}
     async with session.post(f"https://{domainName}{applicationPath}/cart/api/StorePromiseTime", json=body, ssl=False,
                             timeout=None) as response:
         await response.text()
@@ -136,7 +117,7 @@ async def getStorePromisedTime(session, isExress):
     return None
 
 
-async def loadUpsellPage(session, projectKey):
+async def loadUpsellPage(session):
     async with session.get(f"https://{domainName}{applicationPath}/cart/api/Info", ssl=False, timeout=None) as cartInfo:
         await cartInfo.text()
     async with session.get(
@@ -150,18 +131,6 @@ async def loadUpsellPage(session, projectKey):
     return None
 
 
-async def navigateToCartPage(session, projectGroupKey, projectKey, inStorePickup):
-    status = await updateProject(session, projectKey)
-    if status < 300:
-        if inStorePickup:
-            await setPickupLocation(session)
-            await setCourierDeliveryAddress(session)
-        else:
-            await setShipMethod(session)
-        await addToShoppingCart(session, projectGroupKey, projectKey)
-    return None
-
-
 async def approveProject(session, projectKey):
     async with session.post(f"https://{domainName}{applicationPath}/api/v3/project/Approve/{projectKey}",
                             json={}, ssl=False, timeout=None) as response:
@@ -170,7 +139,7 @@ async def approveProject(session, projectKey):
     return None
 
 
-async def getProjectInfo(session):
+async def getProjectInfo(session, productKey):
     async with session.get(f"https://{domainName}{applicationPath}/product/{productKey}/builder/", ssl=False,
                            timeout=None) as response:
         data = await response.text()
@@ -183,30 +152,18 @@ async def getProjectInfo(session):
     return (groupId, data["SubProjects"][0]["ProjectKey"])
 
 
-async def setupAsRik(session):
-    async with session.get(f"https://{domainName}{applicationPath}/legacy/station/6B696F736b5F72696B/126/redirect/",
-                           ssl=False, timeout=None) as response:
+async def setupAsRik(session, storeNumber):
+    async with session.get(
+            f"https://{domainName}{applicationPath}/legacy/station/6B696F736b5F72696B/{storeNumber}/redirect/",
+            ssl=False, timeout=None) as response:
         await response.text()
     sleep(0.1)
     return None
 
 
-async def setEnvironment(session):
+async def setEnvironment(session, pnienv):
     async with session.get(f"https://{domainName}{applicationPath}/?pnienv={pnienv}",
                            ssl=False, timeout=None) as response:
         await response.text()
     sleep(0.1)
     return None
-
-
-async def visitSite():
-    cookies = {authCookieName: authCookieValue}
-    async with aiohttp.ClientSession(cookies=cookies) as session:
-        # await setEnvironment(session)
-        projectInfo = await getProjectInfo(session)
-        await approveProject(session, projectInfo[1])
-        await navigateToCartPage(session, projectInfo[0], projectInfo[1], True)
-
-
-if __name__ == "__main__":
-    asyncio.run(visitSite())
