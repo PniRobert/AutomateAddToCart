@@ -98,7 +98,7 @@ async def setPickupLocation(session, storeNumber):
 
 
 async def setCourierDeliveryAddress(session, address1, city, zipCode, stateAbbre):
-    async with session.post(f"https://{domainName}{applicationPath}/cart/api/address/current",
+    async with session.post(f"https://{domainName}{applicationPath}/legacy/api/address/lmd/storenumber",
                             json={"Address1": address1, "City": city, "PostalCode": zipCode,
                                   "StateAbbreviation": stateAbbre},
                             ssl=False, timeout=None) as response:

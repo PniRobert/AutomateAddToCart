@@ -15,7 +15,7 @@ productKey = "1d9fccc4c2386dfa"  # Ultra Thick Business Cart
 selectedQuantity = 100
 
 
-async def generateCourierCartItem():
+async def generateShipToHomeCartItem():
     cookies = {authCookieName: authCookieValue}
     async with aiohttp.ClientSession(cookies=cookies) as session:
         # await setEnvironment(session)
@@ -27,4 +27,4 @@ async def generateCourierCartItem():
 
 
 if __name__ == "__main__":
-    asyncio.run(generateCourierCartItem())
+    asyncio.run(generateShipToHomeCartItem())

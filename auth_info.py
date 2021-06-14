@@ -1,7 +1,7 @@
 
 # authCookieName = "SPLUS.Phoenix.Site.Staging-Prod.Auth"
 authCookieName = "SPLUS.Phoenix.Site.Auth"
-authCookieValue = "CfDJ8FlY-p0_EwdKm2x2g8-ukuHywpGTY3j7cC59jkNP6c66AgVDirmd52TjGRZLb6gvDNCeCtZm4fd8r-x0Feb9WPRq" + \
-                  "ZYfYofZ8MXIzIXrRiefchQcvd-001Dy-hsOSI8x-fi8MUmpEcfZgDIHmfkiwHoXxTZZF1WC2J547CdKkoRQOC9D3MZW8e" + \
-                  "QJUa8U84euQuLgysz9vi8-RvD9Fda4PQPeaO5hCYrFuiMChZoycBkmd_haRdYA4JouvVhzj02dyIBuAj9svCy4azZCBag" + \
-                  "TvZK2GO7lHDmYCEo5RisOO2mhDnL5SzXXPVEFX6jLBhX8NNP8iGnoefoZmR-OirK_nNxs"
+authCookieValue = "CfDJ8FlY-p0_EwdKm2x2g8-ukuFnBG44E-ZuFDw0uoWyeMfjPYz6h_Wepdg-o6rgsZin0v_d7brNncqRLhxxH" + \
+                  "rfD6JeEscGCWko0JlQzu-d-8G-zWnLh76nmjJNWGJpvwy4pVDEcimMgoG2_yFyglDy48XU-a0YoQCp4r6VBVy7" + \
+                  "xExuzdGRY1AbgzLSBAq8VfK4Hu05pVWkghqH1mf6rMqJLZPfNUMlDIxkq6r_EWymsO1hGDkk55efEWAQkp5dReY" + \
+                  "DyNbBH3uohLlgf7Qr8PO5TuttN-aStvtb0henHB7_NiN0Wc_T4SjFmyaDOFN68G5wcZCuKOCQm0Wg4jN9S2cM9vQw"
