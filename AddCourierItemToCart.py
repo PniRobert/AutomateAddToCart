@@ -3,7 +3,7 @@ import aiohttp
 
 from add_to_cart_util import getProjectInfo, approveProject, updateProject
 from add_to_cart_util import setCourierDeliveryAddress, setPickupLocation, addToShoppingCart
-from auth_info import authCookieName, authCookieValue
+from auth_info import authCookieName, authCookieValue, staplesCookieName, staplesCookieValue
 
 # pnienv = "qa1"
 
@@ -15,10 +15,14 @@ from auth_info import authCookieName, authCookieValue
 productKey = "b904ce0e33e714d7"  # same day poster
 selectedQuantity = 2
 seattleStore = "1312"
+guest = True
 
 
 async def generateCourierCartItem():
-    cookies = {authCookieName: authCookieValue}
+    if guest:
+        cookies = {authCookieName: authCookieValue}
+    else:
+        cookies = {authCookieName: authCookieValue, staplesCookieName: staplesCookieValue}
     async with aiohttp.ClientSession(cookies=cookies) as session:
         # await setEnvironment(session)
         projectInfo = await getProjectInfo(session, productKey)
