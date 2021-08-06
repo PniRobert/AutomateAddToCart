@@ -12,7 +12,8 @@ from auth_info import authCookieName, authCookieValue
 # productKey = "550f7cadad98fe98"
 # productKey = "34a92d9f78cb90a4"
 # productKey = "fadb30ec37bdebc8" # same day poster mega staging
-productKey = "b904ce0e33e714d7"  # same day poster
+# productKey = "b904ce0e33e714d7"  # same day poster
+productKey = "33cbcb43f16860e4" # same day flyer
 selectedQuantity = 2
 seattleStore = "1361"
 
