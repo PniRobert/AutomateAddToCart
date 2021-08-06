@@ -14,7 +14,7 @@ from auth_info import authCookieName, authCookieValue
 # productKey = "fadb30ec37bdebc8" # same day poster mega staging
 productKey = "b904ce0e33e714d7"  # same day poster
 selectedQuantity = 2
-seattleStore = "1312"
+seattleStore = "1361"
 
 
 async def generateCourierCartItem():
@@ -24,7 +24,7 @@ async def generateCourierCartItem():
         projectInfo = await getProjectInfo(session, productKey)
         await approveProject(session, projectInfo[1])
         await updateProject(session, projectInfo[1], productKey, selectedQuantity, "IsCourierDelivery")
-        await setCourierDeliveryAddress(session, "321 West Galer Street", "Seattle", "98119", "WA")
+        await setCourierDeliveryAddress(session, "8830 25th Ave SW", "Seattle", "98106", "WA")
         await setPickupLocation(session, seattleStore)
         await addToShoppingCart(session, projectInfo[0], projectInfo[1], selectedQuantity)
 

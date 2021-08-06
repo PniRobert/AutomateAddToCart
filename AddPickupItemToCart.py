@@ -9,7 +9,7 @@ from auth_info import authCookieName, authCookieValue
 
 productKey = "d2b6ca30acdf9136"  # same day business card
 selectedQuantity = 250
-seattleStore = "1312"
+seattleStore = "1361"
 
 
 async def generate_pickup_item():

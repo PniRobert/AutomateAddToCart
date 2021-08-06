@@ -9,7 +9,7 @@ from auth_info import authCookieName, authCookieValue
 
 productKey = "1cc56024150153ed"  # same day brochure
 selectedQuantity = 25
-seattleStore = "1312"
+seattleStore = "1361"
 
 
 async def generate_express_item():
